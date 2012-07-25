@@ -259,6 +259,11 @@ void ENC28J60::initSPI () {
     const byte SPI_MOSI = 51;
     const byte SPI_MISO = 50;
     const byte SPI_SCK  = 52;
+#elif defined(__AVR_ATmega1284P__)
+    const byte SPI_SS   = 4;
+    const byte SPI_MOSI = 5;
+    const byte SPI_MISO = 6;
+    const byte SPI_SCK  = 7;
 #else
     const byte SPI_SS   = 10;
     const byte SPI_MOSI = 11;
@@ -378,7 +383,11 @@ byte ENC28J60::initialize (word size, const byte* macaddr, byte csPin) {
     bufferSize = size;
     if (bitRead(SPCR, SPE) == 0)
       initSPI();
+#if defined(__AVR_ATmega1284P__)
+    selectBit = csPin;  
+#else
     selectBit = csPin - 8;  
+#endif
     bitSet(DDRB, selectBit);
     disableChip();
     
@@ -410,6 +419,7 @@ byte ENC28J60::initialize (word size, const byte* macaddr, byte csPin) {
     writeRegByte(MAADR1, macaddr[4]);
     writeRegByte(MAADR0, macaddr[5]);
     writePhy(PHCON2, PHCON2_HDLDIS);
+	writePhy(PHCON1, 1); // half-duplex
     SetBank(ECON1);
     writeOp(ENC28J60_BIT_FIELD_SET, EIE, EIE_INTIE|EIE_PKTIE);
     writeOp(ENC28J60_BIT_FIELD_SET, ECON1, ECON1_RXEN);
@@ -420,6 +430,9 @@ byte ENC28J60::initialize (word size, const byte* macaddr, byte csPin) {
     // to see what they do when they release B8. At the moment
     // there is no B8 out yet
     if (rev > 5) ++rev;
+
+	clkout(2); // set clock speed to 12.5 MHz
+
     return rev;
 }
 
@@ -532,7 +545,11 @@ uint8_t ENC28J60::doBIST ( byte csPin) {
 // init	
     if (bitRead(SPCR, SPE) == 0)
       initSPI();
+#if defined(__AVR_ATmega1284P__)
+  selectBit = csPin;  
+#else
     selectBit = csPin - 8;  
+#endif
     bitSet(DDRB, selectBit);
     disableChip();
     
@@ -606,3 +623,8 @@ uint8_t ENC28J60::doBIST ( byte csPin) {
 	return macResult == bitsResult;
 }
 
+void ENC28J60::clkout(uint8_t clk)
+{
+        //setup clkout: 2 is 12.5MHz:
+	writeReg(ECOCON, clk & 0x7);
+}

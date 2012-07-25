@@ -458,7 +458,9 @@ static word www_client_internal_datafill_cb(byte fd) {
     if (client_postval == 0) {
       bfill.emit_p(PSTR("GET $F$S HTTP/1.1\r\n"
                         "Host: $F\r\n"
-                        "Accept: text/html\r\n"
+                        "Accept: */*\r\n"
+						"User-Agent: Arduino 1.0\r\n"
+						"Icy-MetaData:0\r\n"
                         "Connection: close\r\n"
                         "\r\n"), client_urlbuf,
                                  client_urlbuf_var,
@@ -487,8 +489,9 @@ static word www_client_internal_datafill_cb(byte fd) {
 static byte www_client_internal_result_cb(byte fd, byte statuscode, word datapos, word len_of_data) {
   if (fd!=www_fd)
     (*client_browser_cb)(4,0,0);
-  else if (statuscode==0 && len_of_data>12 && client_browser_cb) {
-    byte f = strncmp("200",(char *)&(gPB[datapos+9]),3) != 0;
+  else if (statuscode==0 && len_of_data>=10 && client_browser_cb) {
+	// added support for ICY 200 OK
+    byte f = ((strncmp("200",(char *)&(gPB[datapos+9]),3) != 0) || (strncmp("200",(char *)&(gPB[datapos+4]),3) != 0));
     (*client_browser_cb)(f, ((word)TCP_SRC_PORT_H_P+(gPB[TCP_HEADER_LEN_P]>>4)*4),len_of_data);
   }
   return 0;
@@ -620,7 +623,7 @@ word EtherCard::packetLoop (word plen) {
     }
     if (tcp_client_state==3 && len>0) { 
       // Comment out to enable large files, e.g. mp3 streams to be downloaded
-//      tcp_client_statete = 4;
+      // tcp_client_state = 4;
       if (client_tcp_result_cb) {
         word tcpstart = TCP_DATA_START; // TCP_DATA_START is a formula
         if (tcpstart>plen-8)
