@@ -254,29 +254,16 @@ static int gNextPacketPtr;
 static byte selectPin;
 
 void ENC28J60::initSPI () {
-#if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__)
-    const byte SPI_SS   = 53;
-    const byte SPI_MOSI = 51;
-    const byte SPI_MISO = 50;
-    const byte SPI_SCK  = 52;
-#elif defined(__AVR_ATmega1284P__)
-    const byte SPI_SS   = 4;
-    const byte SPI_MOSI = 5;
-    const byte SPI_MISO = 6;
-    const byte SPI_SCK  = 7;
-#else
-    const byte SPI_SS   = 10;
-    const byte SPI_MOSI = 11;
-    const byte SPI_MISO = 12;
-    const byte SPI_SCK  = 13;
-#endif
 
-    pinMode(SPI_SS, OUTPUT);
-    digitalWrite(SPI_SS, HIGH);
-    pinMode(SPI_MOSI, OUTPUT);
-    pinMode(SPI_SCK, OUTPUT);   
-    pinMode(SPI_MISO, INPUT);
-    
+    pinMode(SS, OUTPUT);
+    if (SS != selectPin) {
+        pinMode(selectPin, OUTPUT);
+        digitalWrite(selectPin, HIGH);
+    }
+    digitalWrite(SS, HIGH);
+    pinMode(MOSI, OUTPUT);
+    pinMode(SCK, OUTPUT);   
+    pinMode(MISO, INPUT);
     digitalWrite(MOSI, HIGH);
     digitalWrite(MOSI, LOW);
     digitalWrite(SCK, LOW);
