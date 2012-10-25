@@ -635,8 +635,14 @@ word EtherCard::packetLoop (word plen) {
         if (tcpstart+len>plen)
           save_len = plen-tcpstart;
         (*client_tcp_result_cb)((gPB[TCP_DST_PORT_L_P]>>5)&0x7,0,tcpstart,save_len);
-		make_tcp_ack_from_any(len,TCP_FLAGS_PUSH_V|TCP_FLAGS_FIN_V);
-        tcp_client_state = 6;
+
+        if(persist_tcp_connection){
+            make_tcp_ack_from_any(len,TCP_FLAGS_PUSH_V);
+        }
+        else{
+		    make_tcp_ack_from_any(len,TCP_FLAGS_PUSH_V|TCP_FLAGS_FIN_V);
+            tcp_client_state = 6;
+        }
         return 0;
       }
     }
@@ -669,4 +675,8 @@ word EtherCard::packetLoop (word plen) {
     }
   }
   return 0;
+}
+
+void EtherCard::persistTcpConnection(bool persist){
+  persist_tcp_connection = persist;
 }
