@@ -460,8 +460,8 @@ static word www_client_internal_datafill_cb(byte fd) {
       bfill.emit_p(PSTR("GET $F$S HTTP/1.0\r\n"
                         "Host: $F\r\n"
                         "Accept: */*\r\n"
-			"User-Agent: Arduino 1.0\r\n"
-			"Icy-MetaData:0\r\n"
+                        "User-Agent: Arduino 1.0\r\n"
+                        "Icy-MetaData:0\r\n"
                         "Connection: close\r\n"
                         "\r\n"), client_urlbuf,
                                  client_urlbuf_var,
